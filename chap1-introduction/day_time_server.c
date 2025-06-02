@@ -5,6 +5,7 @@
 /**
  * 功能： daytime server , send date into back to daytime cliient
  * 目标： 为了说明socket server的用法
+ * 环境： playground(imac-home)，这个环境需要预先准备好unp.h
  * 用法： 
  *  1.编译 gcc -o day_time_server day_time_server.c
  *  2.启动day time server
