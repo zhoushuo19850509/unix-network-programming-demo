@@ -7,10 +7,11 @@
  * 目标： 为了说明socket server的用法
  * 环境： playground(imac-home)，这个环境需要预先准备好unp.h
  * 用法： 
- *  1.编译 gcc -o day_time_server day_time_server.c
- *  2.启动day time server
+ *  1.配置Makefile
+ *  2.执行：  make
+ *  3.启动day time server
  *      sudo ./day_time_server
- *  3.启动day time client访问
+ *  4.启动day time client访问
  *    ./day_time_client 127.0.0.1
  *    可以得到时间信息
  * 

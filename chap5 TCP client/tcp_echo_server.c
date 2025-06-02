@@ -2,7 +2,7 @@
 
 /**
  * 功能： tcp echo server 负责把client发送过来的内容原样发送回去
- * 目标： 为了说明socket server创建一个新的线程，出来客户端socket请求的用法
+ * 目标： 为了说明socket server创建一个新的进程，处理客户端socket请求的用法
  * 环境： playground(imac-home)，这个环境需要预先准备好unp.h
  * 用法： 
  *  1.配置Makefile

@@ -7,8 +7,10 @@
  * 目标： 为了说明socket client的用法
  * 环境： playground(imac-home)，这个环境需要预先准备好unp.h
  * 用法： 
- *  1.编译 gcc -o day_time_client day_time_client.c
- *  2.访问day time server
+ *  用法： 
+ *  1.配置Makefile
+ *  2.执行：  make
+ *  3.访问day time server
  *      ./day_time_client 127.0.0.1
 */
 int main(int argc, char* argv[]){
