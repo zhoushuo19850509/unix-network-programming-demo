@@ -62,36 +62,33 @@ int main(int argc, char* argv[]){
  * 然后再通过socket把内容发送给server
  * 2.读取socket中(server发送过来)的内容，
  * 然后输出到标准输出stdout
+ * 
+ * @param fp file pointer to the input file ，比如标准输入stdio
+ * @param sockfd file descriptor of the socket
+ * 
 */
 void str_cli(FILE *fp, int sockfd){
     printf("client enter str_cli() ...\n");
     char sendline[MAXLINE];  // buffer1 保存client发送给server的内容
     char recvline[MAXLINE];  // buffer2 保存client接收来自server的内容
-
     /**
      * 1.通过Fgets()函数，把文件内容(比如标准输入stdin)放到buffer:  sendline
     */
     while(Fgets(sendline, MAXLINE, fp) != NULL){ 
-
         /**
          * 2.通过Writen()函数，把buffer中的内容写入 socket，
          * 然后通过socket把内容发送给server
         */
         Writen(sockfd, sendline, strlen(sendline));
-
         /**
          * 3.通过 Readline()函数，读取socket中(server发送过来)的内容，放到buffer
         */
         if(Readline(sockfd, recvline, MAXLINE) == 0){
             err_quit("str_cli: ");
         }
-
         /**
          * 4.通过Fputs()函数，把buffer中的内容放到标准输出
         */
         Fputs(recvline, stdout);
-
     }
-
-
 }
