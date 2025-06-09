@@ -5,8 +5,12 @@
 /**
  * 功能： tcp echo  在console(stdin)发送任何字符给server，
  *       然后接收来自server echo back的内容，展示在console(stdout)中
- * 目标： 为了说明muliplex io select()函数的功能。
- *       大致来说就是可以通过select()函数同时监听来自stdin/socket的数据
+ * 目标： 本代码基于tcp_echo_client_select01.c 有如下的升级：
+ *      1.引入buffer的概念，用read()函数代替
+ *        Readline(from socket) and Fget(from stdin)
+ *      2.引入Shutdown的概念，当stdin关闭的时候，正常断开socket连接
+ *        这意思就是client主动关闭连接
+ *   
  * 环境： playground(imac-home)，这个环境需要预先准备好unp.h
  * 用法： 
  *  1.配置Makefile
@@ -14,7 +18,7 @@
  *  2.服务端启动tcp echo server
  *      ./tcp_echo_server
  *  3.客户端启动tch echo client
- *    ./tcp_echo_client_select01  127.0.0.1
+ *    ./tcp_echo_client_select02  127.0.0.1
  *    然后在客户端随便输入一些内容，就能得到server echo back的内容
  *  4.尝试退出tcp echo server
  *  5.此时，按照预期，tcp echo client能够立即接收到来自tcp echo server socket信息： 
@@ -62,14 +66,21 @@ int main(int argc, char* argv[]){
 void str_cli(FILE *fp, int sockfd){
     int maxfdp1;   // max fd正如其名，取stdin fd 和socket fd中比较大的那个
     fd_set rset;  // 这个fd set保存了stdin fd 和 socket fd这两个fd
-    char sendline[MAXLINE];  // buffer1 保存client发送给server的内容
-    char recvline[MAXLINE];  // buffer2 保存client接收来自server的内容
+    int stdineof = 0; // 标志stdin是否关闭 0 ： 未关闭； 1 ： 关闭
+    int n;
+    /**
+     * buffer作为缓存， 既保存client 从stdin读取的内容
+     * 又保存client接收来自server socket的内容
+    */
+    char buff[MAXLINE];  
 
     FD_ZERO(&rset);
 
     // for循环不断执行select()，读取来自socket/stdin的数据
     for(;;){
-        FD_SET(fileno(fp), &rset);
+        if(stdineof == 0){
+            FD_SET(fileno(fp), &rset);
+        }
         FD_SET(sockfd, &rset);
 
         // max fd 取stdin 和socket中比较大的那个
@@ -84,12 +95,18 @@ void str_cli(FILE *fp, int sockfd){
          * 读取socket，并输出到stdout
         */
         if(FD_ISSET(sockfd, &rset)){
-            // 通过 Readline()函数，读取socket中(server发送过来)的内容，放到buffer
-            if(Readline(sockfd, recvline, MAXLINE) == 0){
-                err_quit("str_cli: ");
+            // 通过 Read()函数，读取socket中(server发送过来)的内容，放到buffer
+            if( (n = Read(sockfd, buff, MAXLINE)) == 0){
+                if(stdineof == 1){
+                    // 读取到stdineof，说明socket是正常关闭的，这里只需要return即可
+                    return;    
+                }else{
+                    // socket异常关闭，报错
+                    err_quit("str_cli: server terminated prematurely");
+                }
             }
             // 通过Fputs()函数，把buffer中的内容放到标准输出
-            Fputs(recvline, stdout);
+            Writen(fileno(stdout), buff, n);    
         }
 
         /**
@@ -98,14 +115,22 @@ void str_cli(FILE *fp, int sockfd){
          * 读取socket，并输出到stdout
         */
         if(FD_ISSET(fileno(fp), &rset)){
-            // 通过Fgets()函数，把文件内容(比如标准输入stdin)放到buffer:  sendline
-            if(Fgets(sendline, MAXLINE, fp) != NULL){ 
-                /**
-                 * 调用Writen()函数，把buffer中的内容写入 socket，
-                 * 然后通过socket把内容发送给server
-                */
-                Writen(sockfd, sendline, strlen(sendline));    
+            /**
+             * 通过Read()函数，把文件内容(比如标准输入stdin)放到buffer
+             * 如果Read()函数返回0，说明stdin关闭
+            */
+            if( (n = Read(fileno(fp), buff, MAXLINE)) == 0){   
+                printf("clinet stdin closed ...");
+                stdineof = 1;   // 先置stdin的标志位
+                Shutdown(sockfd, SHUT_WR); // 正常关闭socket连接
+                FD_CLR(fileno(fp), &rset); // 把stdin fd 从rset集合清除
+                continue; // 这里继续for循环，用于client socket正常关闭               
             }
+            /**
+             * 调用Writen()函数，把buffer中的内容写入 socket，
+             * 然后通过socket把内容发送给server
+            */
+            Writen(sockfd, buff, n);    
         }
     }
 }
