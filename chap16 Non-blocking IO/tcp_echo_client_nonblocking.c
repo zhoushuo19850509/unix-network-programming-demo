@@ -21,6 +21,7 @@
  *    tcp echo server启动的端口是9877，定义在unp.h中
 */
 void str_cli(FILE *fp, int sockfd);
+char *gf_time(void);
 
 int main(int argc, char* argv[]){
 
@@ -130,7 +131,8 @@ void str_cli(FILE *fp, int sockfd){
             n = read(STDIN_FILENO, toiptr, &to[MAXLINE] - toiptr);
             if( n < 0){
                 // error from stdin
-                fprintf(stderr, "read error from stdin, print n: \n", n);
+                fprintf(stderr, "%s: read error from stdin, print n: \n", 
+                    gf_time(), n);
                 if(errno != EWOULDBLOCK){
                     err_sys("read error on stdin");
                 }
@@ -143,7 +145,7 @@ void str_cli(FILE *fp, int sockfd){
                 }
             }else{
                 // n > 0 说明从stdin读取到数据
-                fprintf(stderr, "read %d bytes from stdin \n", n);
+                fprintf(stderr, "%s: read %d bytes from stdin \n",gf_time(), n);
                 toiptr += n;
                 FD_SET(sockfd, &wset);
             }
@@ -169,7 +171,8 @@ void str_cli(FILE *fp, int sockfd){
 
             }else{
                 // n > 0 说明从socket读取到数据
-                fprintf(stderr, "read %d bytes from socket \n", n);
+                fprintf(stderr, "%s: read %d bytes from socket \n", 
+                gf_time(), n);
                 friptr += n;
                 FD_SET(STDOUT_FILENO, &wset);
             }
@@ -183,7 +186,8 @@ void str_cli(FILE *fp, int sockfd){
                     err_sys("write error to stdout");
                 }
             }else{
-                fprintf(stderr, "write %d bytes to stdout \n", n);
+                fprintf(stderr, "%s: write %d bytes to stdout \n", 
+                   gf_time(), n);
                 froptr += nwriten;
                 if(froptr == friptr){
                     froptr = friptr = fr; // back to beginning of buffer
@@ -200,7 +204,8 @@ void str_cli(FILE *fp, int sockfd){
                     err_sys("write error to socket");
                 }
             }else{
-                fprintf(stderr, "write %d bytes to socket \n", n);
+                fprintf(stderr, "%s: write %d bytes to socket \n", 
+                    gf_time(), n);
                 tooptr += nwriten;
                 if(tooptr == toiptr){
                     toiptr = tooptr = to;  // back to beginning of buffer
@@ -211,4 +216,21 @@ void str_cli(FILE *fp, int sockfd){
             }
         }
     }
+}
+
+char *gf_time(void){
+    struct timeval tv;
+    static char str[30];
+    char *ptr;
+
+    if(gettimeofday(&tv, NULL) < 0){
+        err_sys("gettimeofday error");
+    }
+
+    ptr = ctime(&tv.tv_sec);
+    strcpy(str, &ptr[11]);
+
+    snprintf(str + 8, sizeof(str) - 8, ".%06ld", tv.tv_usec);
+
+    return str;
 }
