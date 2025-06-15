@@ -66,7 +66,8 @@ int main(int argc, char* argv[]){
 void str_cli(FILE *fp, int sockfd){
     int maxfdp1;   // max fd正如其名，取stdin fd 和socket fd中比较大的那个
     fd_set rset;  // 这个fd set保存了stdin fd 和 socket fd这两个fd
-    int stdineof = 0; // 标志stdin是否关闭 0 ： 未关闭； 1 ： 关闭
+    
+     = 0; // 标志stdin是否关闭 0 ： 未关闭； 1 ： 关闭
     int n;
     /**
      * buffer作为缓存， 既保存client 从stdin读取的内容
