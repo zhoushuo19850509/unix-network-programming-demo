@@ -67,7 +67,7 @@ int main(){
     client[0].fd = listenfd;
     client[0].events = POLLRDNORM;
     // 初始化client数组各个元素： pollfd
-    for(i = 0; i < OPEN_MAX; i++){
+    for(i = 1; i < OPEN_MAX; i++){
         client[i].fd = -1;
     }
 
