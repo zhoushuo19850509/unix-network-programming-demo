@@ -4,7 +4,7 @@
 
 /**
  * 功能： daytime client ,read from the daytime server
- * 目标： 本代码基于chap1/day_time_client，对connect()予以改造，
+ * 目标： 本代码基于chap1/day_time_client.c，对connect()予以改造，
  *       就是为了说明non-blocking connect的用法
  * 环境： playground(imac-home)，这个环境需要预先准备好unp.h
  * 用法： 
@@ -115,6 +115,9 @@ int connect_nonb(int sockfd, const SA *aaptr, socklen_t salen, int nsec){
     /**
      * 调用Select监听socket事件，
      * 如果Select返回0那就是connect超时了
+     * 我们回顾一下：”16.3 nonblocking connect“
+     * 这个小节介绍了为啥要引入nonblocking connect，
+     * 其中一个原因，就是可以实现connect timeout功能
     */
     if( (n = Select(sockfd + 1, &rset, &wset, NULL, nsec ? &tval: NULL)) == 0){
         close(sockfd);

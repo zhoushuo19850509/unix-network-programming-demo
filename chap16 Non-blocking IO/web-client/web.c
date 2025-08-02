@@ -13,8 +13,7 @@
  * 为了说明non-blocking connect的用法
  * 
  * @程序用法
- * web 3 www.foobar.com / image1.gif image2.gif image3.gif \
- * image4.gif image5.gif image6.gif image7.gif
+ * ./web 3 192.168.0.176 / a.txt b.txt c.txt d.txt e.txt f.txt g.txt
  * 
  * arg[0] 程序名
  * arg[1] 创建3个连接
